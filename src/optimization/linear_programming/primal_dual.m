@@ -10,7 +10,7 @@ function [x_star z_star lam_star] = primal_dual(A,b,c,lam)
     
 % step 0
 
-    data = [A b; c' 0]
+    data = [A b; c' 0];
     
     [m n] = size(A);
     
@@ -24,16 +24,16 @@ function [x_star z_star lam_star] = primal_dual(A,b,c,lam)
 
     % set P = P_l = { i: c_l = c'-lam'A = 0}
 
-    c_l = c'-lam'*A
+    c_l = c'-lam'*A;
     
     c_l = [c_l nan(1,m)];
     
     P_l = ~(c_l~=0);
     
     % print P, P_c
-    P = P_l(1:n)
+    P = P_l(1:n);
     
-    P_c = ~P
+    P_c = ~P;
     
     P_c = ~P_l;
     
@@ -64,9 +64,9 @@ function [x_star z_star lam_star] = primal_dual(A,b,c,lam)
     z_ARP = c_B'*inv(B_ARP(:,1:m))*b;
 
     % print ARP tableau
-    ARP = [A_ARP b;r_ARP' -z_ARP]
+    ARP = [A_ARP b;r_ARP' -z_ARP];
         
-    iter=1
+    iter=1;
     
     iter_3=1;
     
@@ -80,14 +80,20 @@ function [x_star z_star lam_star] = primal_dual(A,b,c,lam)
     for(iter=1:1000)
 
     % solve ARP
-    r_ARP(P)
+    r_ARP_P = r_ARP(1:n);
+    r_ARP_P(~P) = NaN;
+    r_ARP_P;
     
-    condition_3 = all(r_ARP(P)>=0)
+    condition_3 = all(r_ARP_P(P) >= 0);
     
-    P_1 = P
+    P_1 = P;
+    
+    if ~condition_3
+        [~, q] = min(r_ARP_P);
+    end
     
     if isnan(std_ratio)
-        'Initial dual solution is infeasible.'
+        warning('primal_dual:InitialDualInfeasible', 'Initial dual solution is infeasible.');
         break
     end  
     
@@ -98,10 +104,10 @@ function [x_star z_star lam_star] = primal_dual(A,b,c,lam)
         
         std_ratio(ARP(1:m,q)<0) = NaN;
         
-        [std_ratio p] = min(std_ratio)
+        [std_ratio p] = min(std_ratio);
         
         if isnan(std_ratio)
-            'unbounded'
+            warning('primal_dual:Unbounded', 'Unbounded.');
             break
         end    
         
@@ -121,23 +127,23 @@ function [x_star z_star lam_star] = primal_dual(A,b,c,lam)
         % step 3 simplex iteration
         iter_3=iter_3+1;
             
-        P_1(p)=0
+        P_1(p)=0;
         
-        r_ARP_3 = r_ARP;
+        r_ARP_3 = r_ARP(1:n);
         
         r_ARP_3(~P_1)=NaN;
         
-        [~, q] = min(r_ARP_3(1:n))
+        [~, q] = min(r_ARP_3);
         
         % all r>0?
-        condition_3 = all(r_ARP_3(P_1)>=0)
+        condition_3 = all(r_ARP_3(P_1)>=0);
             
         % print ARP
-        ARP
+        ARP;
             
         if(iter_3==10000)
             
-            'Time expired: 10,000 iterations at Step 3.'
+            warning('primal_dual:Step3Timeout', 'Time expired: 10,000 iterations at Step 3.');
             
             break
         
@@ -173,21 +179,21 @@ function [x_star z_star lam_star] = primal_dual(A,b,c,lam)
     
     bvi_2(bvi_2==0)=[];
     
-    y = x(n+1:end)
+    y = x(n+1:end);
     
     y_0 = all(y==0);
     
-    condition_4 = y_0
+    condition_4 = y_0;
     % y=0? If no, continue.
     
     % if all y=0 -> optimal solution = x
     if(y_0~=0) 
             
-        x_star=x(1:n)'
+        x_star=x(1:n)';
 
-        z_star=c'*x_star
+        z_star=c'*x_star;
 
-        lam_star=lam
+        lam_star=lam;
 
         break 
      
@@ -199,12 +205,12 @@ function [x_star z_star lam_star] = primal_dual(A,b,c,lam)
     
     r_ARP;
     
-    condition_5 = r_ARP_0
+    condition_5 = r_ARP_0;
             
     % r_ARP>=0?     % If no, continue.
     if(r_ARP_0~=0) 
         
-        '(P) is infeasbile.'
+        warning('primal_dual:PrimalInfeasible', '(P) is infeasible.');
         
         break 
     
@@ -213,7 +219,7 @@ function [x_star z_star lam_star] = primal_dual(A,b,c,lam)
     
 % step 6
 
-    P=P
+    P=P;
     
     c_ARP_1=c_ARP;
     
@@ -234,21 +240,21 @@ function [x_star z_star lam_star] = primal_dual(A,b,c,lam)
     
     r_ARP_r(r_ARP_r>=0)=NaN;
     
-    ratio_l = c_l./-r_ARP_r'
+    ratio_l = c_l./-r_ARP_r';
     
     ratio_l(P_l) = NaN; 
     
     % min { (cj - lam'*aj)/(- rj_ARP): rj_ARP < 0, j in P_c}
-    [eps q] = min(ratio_l(1:n))
+    [eps q] = min(ratio_l(1:n));
     
     % eps = 0 if eps = emptyset
     if isnan(eps)
-        'infeasible'
+        warning('primal_dual:Infeasible', 'Infeasible.');
         break        
     end
         
     % new lam = old lam + eps*u
-    lam = lam + eps*u'
+    lam = lam + eps*u';
     
     % step 2 
         % set P = P_l = { i: c_l = c'-lam'A = 0}
@@ -263,9 +269,9 @@ function [x_star z_star lam_star] = primal_dual(A,b,c,lam)
     P_l(n+1:end) = 0;
     
     % print P,P_c
-    P = P_l(1:n)
+    P = P_l(1:n);
     
-    P_c = ~P
+    P_c = ~P;
     
     P_c = ~P_l;
     
@@ -283,13 +289,13 @@ function [x_star z_star lam_star] = primal_dual(A,b,c,lam)
     
     b_ARP = ARP(:,m+n+1);
     
-    iter=iter+1
+    iter=iter+1;
     
-    ARP
+    ARP;
     
     if(iter==10000)
         
-        'Time expired: 10,000 iterations at Step 6.'
+        warning('primal_dual:Step6Timeout', 'Time expired: 10,000 iterations at Step 6.');
         
         break
         

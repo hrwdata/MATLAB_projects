@@ -152,7 +152,7 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
         
     end
     
-    if tableau(end,1:end-1)>=0
+    if all(tableau(end,1:end-1) >= 0)
         if tableau(end,end)~=0
             'infeasible'
             break
@@ -214,7 +214,7 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
     
         end
          
-        if tableau(end,1:end-1)>=0
+        if all(tableau(end,1:end-1) >= 0)
             x_star = X_1'+d
             z_star = c'*x_star
             break

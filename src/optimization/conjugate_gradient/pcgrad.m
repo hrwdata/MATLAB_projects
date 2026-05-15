@@ -31,25 +31,29 @@
 function [x_star, z_star, x_values, iterations] = pcgrad(f,x0,m,lineSearch,method,tolerance,maxIt)
  
     %%% optional arguments %%%
-    if ~exist('lineSearch')  %
+    if nargin < 4 || isempty(lineSearch)  %
         lineSearch = 'A';    %
     end                      %
                              %
-    if ~exist('method')      %
+    if nargin < 5 || isempty(method)      %
         method = 'F';        %
     end                      %
                              %
-    if ~exist('tolerance')   %
+    if nargin < 6 || isempty(tolerance)   %
         tolerance = 1e-12;   %
     end                      %
                              %
-    if ~exist('maxIt')       %
+    if nargin < 7 || isempty(maxIt)       %
         maxIt = 50;          %
     end                      %
     %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    x0 = x0(:);
     
     % dimension
-    n = size(x0,2);
+    n = numel(x0);
+    vars = symvar(f);
+    grad = gradient(f, vars);
     
     % initial x vector
     x = zeros(n,m+2);
@@ -69,13 +73,7 @@ function [x_star, z_star, x_values, iterations] = pcgrad(f,x0,m,lineSearch,metho
     % initial gradient vector
     g = zeros(n,m+2);
     
-    % convert location for symbolic use
-    x0c = num2cell(x0);
-    
-    % gradient 
-    grad = gradient(f);
-    
-    g(:,1) = grad(x0c{:});
+    g(:,1) = evaluate_symbolic_at_point(grad, vars, x0);
     
     % initial step size vector
     alpha = zeros(m+1,1);
@@ -95,10 +93,8 @@ function [x_star, z_star, x_values, iterations] = pcgrad(f,x0,m,lineSearch,metho
         
         y(:,1) = x(:,1);
         
-        x0c=num2cell(x(:,1));
-        
         % restart with steepest descent direction
-        d(:,1) = -grad(x0c{:});
+        d(:,1) = -evaluate_symbolic_at_point(grad, vars, x(:,1));
         
         % restart after m iterations of conjugate gradient
         for k=1:m+1
@@ -120,10 +116,8 @@ function [x_star, z_star, x_values, iterations] = pcgrad(f,x0,m,lineSearch,metho
             % new partial location
             x(:,k+1)=x(:,k)+alpha(k)*d(:,k);
             
-            xc = num2cell(x(:,k+1));
-            
             % gradient at new location
-            g(:,k+1) = grad(xc{:});
+            g(:,k+1) = evaluate_symbolic_at_point(grad, vars, x(:,k+1));
             
             % Polak-Ribiere
             if method == 'P'
@@ -137,7 +131,7 @@ function [x_star, z_star, x_values, iterations] = pcgrad(f,x0,m,lineSearch,metho
             
             end
             
-            x_values(:,iterations) = x(:,m+2);
+            x_values(:,iterations) = x(:,k+1);
             
             % new conjugate direction
             d(:,k+1)=double(-g(:,k+1)+beta(k)*d(:,k));
@@ -156,12 +150,10 @@ function [x_star, z_star, x_values, iterations] = pcgrad(f,x0,m,lineSearch,metho
     end
     
     % optimal location
-    y_star = num2cell(x(:,m+2));
-    
     x_star = double(x(:,m+2));
     
     % optimal objective function value
-    z_star = double(f(y_star{:}));
+    z_star = evaluate_symbolic_at_point(f, vars, x_star);
     
     % all location values
     no_index = isnan(x_values)==zeros(n,1);

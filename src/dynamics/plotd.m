@@ -5,7 +5,7 @@ function X = plotd(yprime,a,b,c,d,h)
 % [c,d] = y interval
 % h = stepsize
     % optional
-    if(~exist('h'))
+    if nargin < 6 || isempty(h)
         h = (b-a)./10;
     end
 

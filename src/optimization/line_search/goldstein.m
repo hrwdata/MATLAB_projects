@@ -14,27 +14,30 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function alpha = goldstein(f,x0,d,epsilon,eta)
     
-    % epsilon = 1/2
-    if(~exist('epsilon')) epsilon = 1/3;
+    % epsilon = 1/3
+    if nargin < 4 || isempty(epsilon)
+        epsilon = 1/3;
     end
     
     % eta = 2
-    if(~exist('eta'))    eta = 2;
+    if nargin < 5 || isempty(eta)
+        eta = 2;
     end
     
-    % convert for symbolic use
-    x0c = num2cell(x0);
+    x0 = x0(:);
+    d = d(:);
+    vars = symvar(f);
+    grad = gradient(f, vars);
     
     % initial alpha
     alpha = 1;
 
     % starting objective value
-    phi_0 = f(x0c{:});
+    phi_0 = evaluate_symbolic_at_point(f, vars, x0);
     
     % alpha derivative
-    g = gradient(f);
-    
-    phi_prime_0 = g(x0c{:})'*d;
+    g0 = evaluate_symbolic_at_point(grad, vars, x0);
+    phi_prime_0 = g0(:)'*d;
     
     % while condition is not met
     condition_met = 0;
@@ -42,10 +45,10 @@ function alpha = goldstein(f,x0,d,epsilon,eta)
     while ~condition_met
         
         % new location
-        xc = num2cell(x0+alpha*d);
+        x_next = x0 + alpha*d;
         
         % objective function value
-        phi = double(f(xc{:}));
+        phi = evaluate_symbolic_at_point(f, vars, x_next);
         
         % Armijo's rule
         armijos_rule = double(phi_0 + epsilon*phi_prime_0*alpha);
@@ -56,6 +59,10 @@ function alpha = goldstein(f,x0,d,epsilon,eta)
         if ~condition_met
             
             alpha = alpha/3;
+
+            % objective function value at updated alpha
+            x_next = x0 + alpha*d;
+            phi = evaluate_symbolic_at_point(f, vars, x_next);
             
             % Armijo's rule
             armijos_rule = double(phi_0 + epsilon*phi_prime_0*alpha);
@@ -66,6 +73,10 @@ function alpha = goldstein(f,x0,d,epsilon,eta)
         else 
             
             alpha = alpha*2;
+
+            % objective function value at updated alpha
+            x_next = x0 + alpha*d;
+            phi = evaluate_symbolic_at_point(f, vars, x_next);
             
             % Goldstein's condition
             

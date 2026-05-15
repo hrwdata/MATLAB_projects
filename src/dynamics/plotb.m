@@ -2,6 +2,13 @@ function plotb(pprime,p0,h1,h2,hinc)
 %% Bifurcation Diagram
 % pprime, p0 = differential equation
 % h1 = start, h2 = end, hinc = increment
+
+src_dir = fileparts(fileparts(mfilename('fullpath')));
+numerics_dir = fullfile(src_dir, 'numerics');
+original_dir = pwd;
+cleanup_obj = onCleanup(@() cd(original_dir));
+cd(numerics_dir);
+
 figure;
 hold on
 

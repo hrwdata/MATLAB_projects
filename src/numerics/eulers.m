@@ -35,7 +35,6 @@ for n=1:N-1
 end
     
 % print results
-format long
 table_1 = [x; y; f]';
 rowNames = arrayfun(@num2str,0:N-1,'Uni',0);
 colNames = {'x','y','f'};

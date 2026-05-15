@@ -9,9 +9,9 @@
 % % %   lam - dual feasible solution                        % % % 
 function [x_star z_star] = bounded_simplex(A,b,c,d,h)
 
- b = b-A*d
+ b = b-A*d;
  
- h = h-d
+ h = h-d;
     % Phase I
     
     [m n] = size(A);
@@ -21,7 +21,7 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
     
     tableau = [A eye(m) b; c_I];
     
-    tableau(end,:) = tableau(end,:)-sum(tableau(1:m,:),1)
+    tableau(end,:) = tableau(end,:)-sum(tableau(1:m,:),1);
     
     
     % basic variable index
@@ -61,14 +61,14 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
         r_1(q_1)=NaN;
     end
     
-    [~, q] = min(r_1)
+    [~, q] = min(r_1);
     
     r_2=r_1;
     
     r_2(isnan(r_1))=[];
     
     if isempty(r_2)
-        break
+        break;
     end
     
     % pivot row p
@@ -101,9 +101,9 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
     
     eps(eps<=0)=NaN;
             
-    [eps_4 p_4] = min(eps(:,1))
+    [eps_4 p_4] = min(eps(:,1));
     
-    p = eps(p_4,2)
+    p = eps(p_4,2);
 
     
     % bound reached
@@ -114,7 +114,7 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
         % fix nonbasic
         q_1=[q_1 q];
         
-        tableau
+        tableau;
         
     end
     
@@ -129,7 +129,7 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
         tableau(:,q)=tableau(:,q)-X_1(q)*tableau(:,q);
        
             
-        tableau
+        tableau;
         
         q_1 =[q_1 q];
         
@@ -148,13 +148,13 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
         
         end
             
-        tableau
+        tableau;
         
     end
     
-    if tableau(end,1:end-1)>=0
+    if all(tableau(end,1:end-1) >= 0)
         if tableau(end,end)~=0
-            'infeasible'
+            warning('bounded_simplex:Infeasible', 'Infeasible.');
             break
         end
         break
@@ -163,7 +163,7 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
     end
     
     % Phase II
-    tableau(:,n+1:end-1)=[]
+    tableau(:,n+1:end-1)=[];
         
     % basic variable index
     bvi = zeros(1,n);
@@ -178,7 +178,7 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
     
     end
     
-    bvi
+    bvi;
     
     c_II = [c' 0];
     % c_I = [c' zeros(1,m) 0]
@@ -192,7 +192,7 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
     
     c_II_1(bvi_1)=c_II_1(logical(bvi));
     
-    tableau(end,:)=c_II-c_II_1(1:m)*tableau(1:m,:)
+    tableau(end,:)=c_II-c_II_1(1:m)*tableau(1:m,:);
 
     
     % basic variable index     
@@ -202,7 +202,7 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
     
     for iter=1:5
         
-        iter
+        iter;
         
         for jndex = 1:n
         
@@ -214,9 +214,9 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
     
         end
          
-        if tableau(end,1:end-1)>=0
-            x_star = X_1'+d
-            z_star = c'*x_star
+        if all(tableau(end,1:end-1) >= 0)
+            x_star = X_1'+d;
+            z_star = c'*x_star;
             break
         end
         
@@ -239,15 +239,15 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
     
         r_1(logical((tableau(end,1:n)>=0)))=NaN;
     
-        [~, q] = min(r_1)
+        [~, q] = min(r_1);
     
         r_2=r_1;
     
         r_2(isnan(r_1))=[];
     
         if isempty(r_2)
-            x_star = X_1'+d
-            z_star = c'*x_star
+            x_star = X_1'+d;
+            z_star = c'*x_star;
             break
         end
     
@@ -280,7 +280,7 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
             
         [eps_4 p_4] = min(eps(:,1));
     
-        p = eps(p_4,2)
+        p = eps(p_4,2);
     
         % bound reached
         if p_4==1
@@ -294,7 +294,7 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
             % fix nonbasic
             q_1=q;
         
-            tableau
+            tableau;
         
         end
     
@@ -318,7 +318,7 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
         
             end
             
-            tableau
+            tableau;
         
         end
     
@@ -334,7 +334,7 @@ function [x_star z_star] = bounded_simplex(A,b,c,d,h)
             tableau(index,:) = tableau(index,:)- tableau(p,:).*tableau(index,q);
 
             end
-            tableau
+            tableau;
         
         end
     

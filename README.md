@@ -45,7 +45,11 @@ addpath(genpath('sample-data'));
 ## Minimal Reproducible Example
 
 ```matlab
-addpath(genpath('src'));
+repoRoot = pwd;
+addpath(genpath(fullfile(repoRoot, 'src')));
+originalDir = pwd;
+cleanupObj = onCleanup(@() cd(originalDir));
+cd(fullfile(repoRoot, 'src', 'numerics'));
 [x, y, f, results_table] = eulers(@(x,y) x + y, 0, 1, 1, 0.1);
 disp(results_table(1:3,:))
 ```
@@ -58,8 +62,12 @@ disp(results_table(1:3,:))
 ## Running Tests
 
 ```matlab
-addpath(genpath('src'));
-results = runtests('tests');
+repoRoot = pwd;
+addpath(genpath(fullfile(repoRoot, 'src')));
+originalDir = pwd;
+cleanupObj = onCleanup(@() cd(originalDir));
+cd(fullfile(repoRoot, 'tests'));
+results = runtests('.');
 table(results)
 ```
 
